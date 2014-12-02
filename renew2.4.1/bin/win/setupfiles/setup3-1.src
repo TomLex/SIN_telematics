@@ -1,0 +1,1 @@
+"%_JAVA_BIN%java" -Xmx200M -Dde.renew.netPath=%_NP% -Dde.renew.classPath="%CLASSPATH:"=%" -jar "%_BASEDIR%\loader.jar" gui %1 %2 %3 %4 %5 %6 %7 %8 %9
