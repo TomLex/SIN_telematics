@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import argparse
+from pprint import pprint as pp
 
 __author__ = "Tomas Varga"
 __editor__ = "Barbora Netkova"
@@ -20,7 +21,8 @@ class LaneType1():
 		self.queue_sr = []
 		self.queue_lengths_sr = []
 
-	def queue(self, direction=None):
+
+	def enqueue(self, direction=None):
 		if direction == "left":
 			self.gen_cars_l += 1
 			self.queue_l.append(self.gen_cars_l)
@@ -30,11 +32,13 @@ class LaneType1():
 			self.queue_sr.append(self.gen_cars_sr)
 			self.queue_lengths_sr.append(len(self.queue_sr))
 
+
 	def dequeue(self, direction=None):
 		if direction == "left":
 			self.queue_l.pop()
 		elif direction == "straight_right":
 			self.queue_sr.pop()
+
 
 	def __get_average_queue_length(self, queue):
 		try:
@@ -42,18 +46,19 @@ class LaneType1():
 		except:
 			return 0
 
+
 	def stats(self):
 		print "=================================================================="
 		print "STATS FOR {0}:".format(self.name.upper())
 		print "------------------"
 		print "Generated cars left            :", self.gen_cars_l
-		print "Length of queue to left        :", len(self.queue_l)
 		print "Average length of queue to left:", self.__get_average_queue_length(self.queue_lengths_l)
+		print "Actual length of queue to left :", len(self.queue_l)
 		print
 		print "Generated cars straight and right            :", self.gen_cars_sr 
 		print "Length of queue to straight and right        :", len(self.queue_sr)
 		print "Average length of queue to straight and right:", self.__get_average_queue_length(self.queue_lengths_sr)
-		print "=================================================================="
+		print 
 
 
 class LaneType2():
@@ -64,13 +69,32 @@ class LaneType2():
 		self.queue = []
 		self.queue_lengths = []
 
-	def queue(self):
+
+	def enqueue(self, direction=None):
 		self.gen_cars += 1
 		self.queue.append(self.gen_cars)
 		self.queue_lengths.append(len(self.queue))
 
-	def dequeue(self):
+
+	def dequeue(self, direction=None):
 		self.queue.pop()
+
+
+	def __get_average_queue_length(self, queue):
+		try:
+			return sum(queue) / float(len(queue))
+		except:
+			return 0
+
+
+	def stats(self):
+		print "=================================================================="
+		print "STATS FOR {0}:".format(self.name.upper())
+		print "------------------"
+		print "Generated cars         :", self.gen_cars
+		print "Average length of queue:", self.__get_average_queue_length(self.queue)
+		print "Actual length of queue :", len(self.queue)
+		print
 	
 
 class Obilnak(LaneType1):
@@ -106,7 +130,7 @@ class TelematicsStats():
 		self.important_labels = self.lanes + ["SearchQueue"]
 		self.direction_mapping = {
 			"<"  :"left",
-			"^>" :"right_straight",
+			"^>" :"straight_right",
 			"<^>":"all"
 		}
 
@@ -156,10 +180,10 @@ class TelematicsStats():
 
 
 	def run(self):
-		for line in self.stats_lines[:5]:
+		for line in self.stats_lines:
 			# advancing time
 			if line.startswith("SearchQueue"):
-				self.time += line.split()[-1]
+				self.time += float(line.split()[-1])
 			# process obilnak
 			elif any([line.startswith(lane) for lane in self.lanes]):
 				try:
@@ -167,12 +191,15 @@ class TelematicsStats():
 				except:
 					continue
 				if data['process'] == "waiting" and data['state'] == "putting":
-					data['lane'].queue(direction=data['direction'])
+					data['lane'].enqueue(direction=data['direction'])
 				elif data['process'] == "waiting" and data['state'] == "removing":
 					data['lane'].dequeue(direction=data['direction'])
 
 		self.obilnak.stats()		
-		self.konecnak.stats()			
+		self.konecnak.stats()	
+		self.kravak.stats()
+		self.mendlak.stats()		
+
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
