@@ -16,31 +16,35 @@ class LaneType1():
 		self.gen_cars_l = 0
 		self.queue_l = []
 		self.queue_lengths_l = []
+		self.times_spent_in_queue_l = []
 
 		self.gen_cars_sr = 0
 		self.queue_sr = []
 		self.queue_lengths_sr = []
+		self.times_spent_in_queue_rs = []
+		
 
-
-	def enqueue(self, direction=None):
+	def enqueue(self, direction, time):
 		if direction == "left":
 			self.gen_cars_l += 1
-			self.queue_l.append(self.gen_cars_l)
+			self.queue_l.append((self.gen_cars_l, time))
 			self.queue_lengths_l.append(len(self.queue_l))
 		elif direction == "straight_right":
 			self.gen_cars_sr += 1
-			self.queue_sr.append(self.gen_cars_sr)
+			self.queue_sr.append((self.gen_cars_sr, time))
 			self.queue_lengths_sr.append(len(self.queue_sr))
 
 
-	def dequeue(self, direction=None):
+	def dequeue(self, direction, time):
 		if direction == "left":
-			self.queue_l.pop()
+			index, time_of_input = self.queue_l.pop(0)
+			self.times_spent_in_queue_l.append(time-time_of_input)
 		elif direction == "straight_right":
-			self.queue_sr.pop()
+			index, time_of_input = self.queue_sr.pop(0)
+			self.times_spent_in_queue_rs.append(time-time_of_input)
 
 
-	def __get_average_queue_length(self, queue):
+	def __get_average_queue_value(self, queue):
 		try:
 			return sum(queue) / float(len(queue))
 		except:
@@ -50,14 +54,16 @@ class LaneType1():
 	def stats(self):
 		print "=================================================================="
 		print "STATS FOR {0}:".format(self.name.upper())
-		print "------------------"
+		print "-------------------"
 		print "Generated cars left            :", self.gen_cars_l
-		print "Average length of queue to left:", self.__get_average_queue_length(self.queue_lengths_l)
+		print "Average length of queue to left:", self.__get_average_queue_value(self.queue_lengths_l)
 		print "Actual length of queue to left :", len(self.queue_l)
+		print "Average time of waiting to left: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_l),2))
 		print
 		print "Generated cars straight and right            :", self.gen_cars_sr 
-		print "Length of queue to straight and right        :", len(self.queue_sr)
-		print "Average length of queue to straight and right:", self.__get_average_queue_length(self.queue_lengths_sr)
+		print "Average length of queue to straight and right:", self.__get_average_queue_value(self.queue_lengths_sr)
+		print "Actual length of queue to straight and right :", len(self.queue_sr)
+		print "Average time of waiting to straight and right: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_rs),2))
 		print 
 
 
@@ -69,31 +75,37 @@ class LaneType2():
 		self.queue = []
 		self.queue_lengths = []
 
+		self.times_spent_in_queue = []
 
-	def enqueue(self, direction=None):
+
+	def enqueue(self, direction, time):
 		self.gen_cars += 1
-		self.queue.append(self.gen_cars)
+		self.queue.append((self.gen_cars, time))
 		self.queue_lengths.append(len(self.queue))
 
 
-	def dequeue(self, direction=None):
-		self.queue.pop()
+	def dequeue(self, direction, time):
+		index, time_of_input = self.queue.pop(0)
+		self.times_spent_in_queue.append(time-time_of_input)
 
 
-	def __get_average_queue_length(self, queue):
+	def __get_average_queue_value(self, queue):
 		try:
 			return sum(queue) / float(len(queue))
 		except:
+			print "exception"
 			return 0
 
 
 	def stats(self):
 		print "=================================================================="
 		print "STATS FOR {0}:".format(self.name.upper())
-		print "------------------"
+		print "-------------------"
 		print "Generated cars         :", self.gen_cars
-		print "Average length of queue:", self.__get_average_queue_length(self.queue)
+		print "Average length of queue:", self.__get_average_queue_value(self.queue_lengths)
 		print "Actual length of queue :", len(self.queue)
+		print
+		print "Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
 		print
 	
 
@@ -121,13 +133,48 @@ class Kravak(LaneType2):
 		self.name = "kravak"
 
 
+class Tram():
+	def __init__(self):
+		self.name = "tram"
+		self.gen_trams = 0
+		self.queue = []
+
+		self.times_spent_in_queue = []
+
+
+	def enqueue(self, time):
+		self.gen_trams += 1
+		self.queue.append((self.gen_trams, time))
+
+
+	def dequeue(self, time):
+		index, time_of_input = self.queue.pop(0)
+		self.times_spent_in_queue.append(time-time_of_input)
+
+
+	def __get_average_queue_value(self, queue):
+		try:
+			return sum(queue) / float(len(queue))
+		except:
+			print 0
+
+
+	def stats(self):
+		print "=================================================================="
+		print "STATS FOR TRAM:"
+		print "-------------------"
+		print "Generated trams        :", self.gen_trams
+		print "Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
+		print
+
+
 class TelematicsStats():
 	
 	def __init__(self, stats_file):
 		self.home = os.path.expanduser('~')
 		self.default_stats_file = os.path.join(self.home, "renewlogs/telematics.log")
 		self.lanes = ["ME", "OB", "KO", "KR"]
-		self.important_labels = self.lanes + ["SearchQueue"]
+		self.important_labels = self.lanes + ["SearchQueue", "tram"]
 		self.direction_mapping = {
 			"<"  :"left",
 			"^>" :"straight_right",
@@ -151,6 +198,7 @@ class TelematicsStats():
 			"ME" : self.mendlak,
 			"KR" : self.kravak
 		}
+		self.tram = Tram()
 
 		self.__parse_input()
 
@@ -163,7 +211,7 @@ class TelematicsStats():
 					self.stats_lines.append(line)
 
 
-	def __get_data(self, line):
+	def __get_data_lane(self, line):
 		lane_info = line.split()[0].split('_')
 		state_info = line.split()[2]
 		data = {
@@ -176,29 +224,69 @@ class TelematicsStats():
 			data['state'] = "removing"
 		elif "Putting" in state_info:
 			data['state'] = "putting"
+		else:
+			data = None
+
 		return data
+
+
+	def __get_data_tram(self, line):
+		process = line.split()[0].split('_')[-1]
+		state_info = line.split()[2]
+		data = {
+			"process": process,
+		}
+
+		if "Removing" in state_info:
+			data['state'] = "removing"
+		elif "Putting" in state_info:
+			data['state'] = "putting"
+		else:
+			data = None
+
+		return data
+
+
+	def get_stats(self):
+		self.obilnak.stats()		
+		self.konecnak.stats()	
+		self.kravak.stats()
+		self.mendlak.stats()
+		self.tram.stats()
 
 
 	def run(self):
 		for line in self.stats_lines:
 			# advancing time
 			if line.startswith("SearchQueue"):
-				self.time += float(line.split()[-1])
-			# process obilnak
+				self.time = float(line.split()[-1])
+			# process lanes
 			elif any([line.startswith(lane) for lane in self.lanes]):
 				try:
-					data = self.__get_data(line)
+					data = self.__get_data_lane(line)
+					if not data:
+						continue
 				except:
 					continue
 				if data['process'] == "waiting" and data['state'] == "putting":
-					data['lane'].enqueue(direction=data['direction'])
+					data['lane'].enqueue(data['direction'], self.time)
 				elif data['process'] == "waiting" and data['state'] == "removing":
-					data['lane'].dequeue(direction=data['direction'])
+					data['lane'].dequeue(data['direction'], self.time)
+			# process tram
+			elif line.startswith("tram"):
+				try:
+					data = self.__get_data_tram(line)
+					if not data:
+						continue
+				except:
+					continue
+				if data['process'] == "waiting" and data['state'] == "putting":
+					self.tram.enqueue(self.time)
+				elif data['process'] == "waiting" and data['state'] == "removing":
+					self.tram.dequeue(self.time)
 
-		self.obilnak.stats()		
-		self.konecnak.stats()	
-		self.kravak.stats()
-		self.mendlak.stats()		
+		# print all gathered stats			
+		self.get_stats()
 
 
 if __name__ == '__main__':
