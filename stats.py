@@ -207,7 +207,10 @@ class TelematicsStats():
 	def __parse_input(self):
 		with open(self.stats_file, 'r+') as f:
 			for line in f.readlines():
-				(label, _, message) = line.split(' ',2)
+				try:
+					(label, _, message) = line.split(' ',2)
+				except:
+					exit("Wrong file format! Renew must be started with ./RUN.sh")
 				if any([label.startswith(important_label) for important_label in self.important_labels]):
 					self.stats_lines.append(line)
 		# get the last simulation
