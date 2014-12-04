@@ -53,18 +53,19 @@ class LaneType1():
 
 	def stats(self):
 		print "=================================================================="
-		print "STATS FOR {0}:".format(self.name.upper())
-		print "-------------------"
-		print "Generated cars left            :", self.gen_cars_l
-		print "Average length of queue to left:", self.__get_average_queue_value(self.queue_lengths_l)
-		print "Actual length of queue to left :", len(self.queue_l)
-		print "Average time of waiting to left: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_l),2))
+		print "| STATS FOR {0} LANE:".format(self.name.upper())
+		print "| ------------------------"
+		print "| Generated cars left            :", self.gen_cars_l
+		print "| Average length of queue to left:", self.__get_average_queue_value(self.queue_lengths_l)
+		print "| Actual length of queue to left :", len(self.queue_l)
+		print "| Average time of waiting to left: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_l),2))
+		print "| "
+		print "| Generated cars straight and right            :", self.gen_cars_sr 
+		print "| Average length of queue to straight and right:", self.__get_average_queue_value(self.queue_lengths_sr)
+		print "| Actual length of queue to straight and right :", len(self.queue_sr)
+		print "| Average time of waiting to straight and right: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_rs),2))
 		print
-		print "Generated cars straight and right            :", self.gen_cars_sr 
-		print "Average length of queue to straight and right:", self.__get_average_queue_value(self.queue_lengths_sr)
-		print "Actual length of queue to straight and right :", len(self.queue_sr)
-		print "Average time of waiting to straight and right: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_rs),2))
-		print 
+
 
 
 class LaneType2():
@@ -99,14 +100,14 @@ class LaneType2():
 
 	def stats(self):
 		print "=================================================================="
-		print "STATS FOR {0}:".format(self.name.upper())
-		print "-------------------"
-		print "Generated cars         :", self.gen_cars
-		print "Average length of queue:", self.__get_average_queue_value(self.queue_lengths)
-		print "Actual length of queue :", len(self.queue)
-		print
-		print "Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
-		print
+		print "| STATS FOR {0} LANE:".format(self.name.upper())
+		print "| ------------------------"
+		print "| Generated cars         :", self.gen_cars
+		print "| Average length of queue:", self.__get_average_queue_value(self.queue_lengths)
+		print "| Actual length of queue :", len(self.queue)
+		print "| "
+		print "| Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
+		print 
 	
 
 class Obilnak(LaneType1):
@@ -161,10 +162,10 @@ class Tram():
 
 	def stats(self):
 		print "=================================================================="
-		print "STATS FOR TRAM:"
-		print "-------------------"
-		print "Generated trams        :", self.gen_trams
-		print "Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
+		print "| STATS FOR TRAM:"
+		print "| -------------------"
+		print "| Generated trams        :", self.gen_trams
+		print "| Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
 		print
 
 
@@ -174,7 +175,7 @@ class TelematicsStats():
 		self.home = os.path.expanduser('~')
 		self.default_stats_file = os.path.join(self.home, "renewlogs/telematics.log")
 		self.lanes = ["ME", "OB", "KO", "KR"]
-		self.important_labels = self.lanes + ["SearchQueue", "tram"]
+		self.important_labels = self.lanes + ["SearchQueue", "tram", "telematics"]
 		self.direction_mapping = {
 			"<"  :"left",
 			"^>" :"straight_right",
@@ -209,6 +210,12 @@ class TelematicsStats():
 				(label, _, message) = line.split(' ',2)
 				if any([label.startswith(important_label) for important_label in self.important_labels]):
 					self.stats_lines.append(line)
+		# get the last simulation
+		for index, line in enumerate(self.stats_lines):
+			if "New net instance telematics" in line:
+				last_simulation_start = index
+		self.stats_lines = self.stats_lines[last_simulation_start:]
+
 
 
 	def __get_data_lane(self, line):
