@@ -214,6 +214,7 @@ class TelematicsStats():
 				if any([label.startswith(important_label) for important_label in self.important_labels]):
 					self.stats_lines.append(line)
 		# get the last simulation
+		last_simulation_start = 0
 		for index, line in enumerate(self.stats_lines):
 			if "New net instance telematics" in line:
 				last_simulation_start = index
