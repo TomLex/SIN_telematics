@@ -56,12 +56,12 @@ class LaneType1():
 		print "| STATS FOR {0} LANE:".format(self.name.upper())
 		print "| ------------------------"
 		print "| Generated cars left            :", self.gen_cars_l
-		print "| Average length of queue to left:", self.__get_average_queue_value(self.queue_lengths_l)
+		print "| Average length of queue to left:", round(self.__get_average_queue_value(self.queue_lengths_l),2)
 		print "| Actual length of queue to left :", len(self.queue_l)
 		print "| Average time of waiting to left: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_l),2))
 		print "| "
 		print "| Generated cars straight and right            :", self.gen_cars_sr 
-		print "| Average length of queue to straight and right:", self.__get_average_queue_value(self.queue_lengths_sr)
+		print "| Average length of queue to straight and right:", round(self.__get_average_queue_value(self.queue_lengths_sr),2)
 		print "| Actual length of queue to straight and right :", len(self.queue_sr)
 		print "| Average time of waiting to straight and right: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue_rs),2))
 		print
@@ -103,7 +103,7 @@ class LaneType2():
 		print "| STATS FOR {0} LANE:".format(self.name.upper())
 		print "| ------------------------"
 		print "| Generated cars         :", self.gen_cars
-		print "| Average length of queue:", self.__get_average_queue_value(self.queue_lengths)
+		print "| Average length of queue:", round(self.__get_average_queue_value(self.queue_lengths),2)
 		print "| Actual length of queue :", len(self.queue)
 		print "| "
 		print "| Average time of waiting: {0} seconds".format(round(self.__get_average_queue_value(self.times_spent_in_queue),2))
